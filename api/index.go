@@ -34,6 +34,7 @@ func Handler(w http.ResponseWriter, req *http.Request) {
 
 	r := buildRouter(w, req)
 
+	r.GET("/greet", greet)
 	v1 := r.Group("/api/v1")
 	{
 		v1.GET("/greet", greet)
