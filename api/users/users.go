@@ -4,8 +4,8 @@ import (
 	f "github.com/fauna/faunadb-go/faunadb"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"net/http"
 	utils "github.com/trevor-atlas/weekend/api/utils"
+	"net/http"
 )
 
 type User struct {
