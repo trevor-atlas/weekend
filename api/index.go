@@ -49,8 +49,7 @@ func Handler(w http.ResponseWriter, req *http.Request) {
 
 	// By default it serves on :8080 unless a
 	// PORT environment variable was defined.
-	PORT := os.Getenv("PORT")
-	r.Run(PORT)
+	r.Run("8080")
 }
 
 func greet(c *gin.Context) {
