@@ -3,7 +3,6 @@ package handler
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	users "github.com/trevor-atlas/weekend/api/users"
 	"log"
 	"net/http"
 	"time"
