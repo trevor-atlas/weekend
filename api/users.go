@@ -5,7 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"net/http"
-	utils "github.com/trevor-atalas/weekend/api/utils"
+	utils "github.com/trevor-atlas/weekend/api/utils"
 )
 
 type User struct {
@@ -40,7 +40,7 @@ func Login(c *gin.Context) {
 
 // CreateEntry - returns entry object from data send in request
 func CreateUser(c *gin.Context) {
-	token := utils.ExtractHeader()
+	token := utils.ExtractToken(c)
 	if token != "12345" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid or missing authorization token"})
 		return
@@ -67,12 +67,12 @@ func CreateUser(c *gin.Context) {
 }
 
 // DBGetAllRefs - get all elements
-func DBGetAllRefs(client *f.FaunaClient, token string) (refs []f.RefV, err error) {
+func DBGetAllRefs(client *f.FaunaClient, id string) (refs []f.RefV, err error) {
 	value, err := client.Query(
 		f.Paginate(
 			f.MatchTerm(
-				f.Index("entries_with_token"),
-				token,
+				f.Index("user_id"),
+				id,
 			),
 		),
 	)
@@ -85,7 +85,7 @@ func DBGetAllRefs(client *f.FaunaClient, token string) (refs []f.RefV, err error
 }
 
 // DBGetFromRefs - get all elements
-func DBGetFromRefs(client *f.FaunaClient, refs []f.RefV) (entries []Entry, err error) {
+func DBGetFromRefs(client *f.FaunaClient, refs []f.RefV) (entries []User, err error) {
 	request := mapRefV(refs, func(ref f.RefV) interface{} {
 		return f.Get(ref)
 	})
@@ -98,11 +98,11 @@ func DBGetFromRefs(client *f.FaunaClient, refs []f.RefV) (entries []Entry, err e
 	var elements f.ArrayV
 	value.Get(&elements)
 
-	results := make([]Entry, len(elements))
+	results := make([]User, len(elements))
 	for index, element := range elements {
 		var object f.ObjectV
 		element.At(f.ObjKey("data")).Get(&object)
-		var entry Entry
+		var entry User
 		object.Get(&entry)
 		results[index] = entry
 	}
@@ -115,8 +115,8 @@ func (entry User) DBGet(client *f.FaunaClient) (value f.Value, err error) {
 	return client.Query(
 		f.Get(
 			f.MatchTerm(
-				f.Index("entry_with_token_user_item"),
-				f.Arr{entry.Token, entry.UserID, entry.ItemID},
+				f.Index("user_id"),
+				f.Arr{entry.ID},
 			),
 		),
 	)

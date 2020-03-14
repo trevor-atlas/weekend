@@ -4,16 +4,22 @@ import (
 	"log"
 	"net/http"
 	"github.com/gin-gonic/gin"
+	"os"
 	"time"
 )
 
 
 func buildRouter(w http.ResponseWriter, r *http.Request) *gin.Engine {
 	defer track(runtime("build router"))
-	// Creates a gin router with default middleware:
-	// logger and recovery (crash-free) middleware
-	router := gin.Default()
-	// pass our ResponseWriter and Request into gin
+	router := gin.New()
+
+	// Global middleware
+	// Logger middleware will write the logs to gin.DefaultWriter even if you set with GIN_MODE=release.
+	// By default gin.DefaultWriter = os.Stdout
+	router.Use(gin.Logger())
+
+	// Recovery middleware recovers from any panics and writes a 500 if there was one.
+	router.Use(gin.Recovery())
 	// otherwise it has no knowledge of them coming in via now serverless
 	router.ServeHTTP(w, r)
 
@@ -26,12 +32,22 @@ func Handler(w http.ResponseWriter, req *http.Request) {
 	log.Println("Request url: ", req.URL.Path)
 
 	r := buildRouter(w, req)
-	r.GET("/greet", greet)
+
+	v1 := r.Group("/v1")
+	{
+		v1.GET("/greet", greet)
+		v1.POST("/login", Login)
+	}
+
+	users := v1.Group("/users")
+	{
+		users.POST("/create", Login)
+	}
 
 	// By default it serves on :8080 unless a
 	// PORT environment variable was defined.
-	r.Run()
-	// router.Run(":3000") for a hard coded port
+	PORT := os.Getenv("PORT")
+	r.Run(PORT)
 }
 
 func greet(c *gin.Context) {
