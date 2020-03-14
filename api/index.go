@@ -1,12 +1,12 @@
 package handler
 
 import (
+	"github.com/gin-gonic/gin"
+	users "github.com/trevor-atlas/weekend/api/users"
 	"log"
 	"net/http"
-	"github.com/gin-gonic/gin"
 	"os"
 	"time"
-	users "github.com/trevor-atlas/weekend/api/users"
 )
 
 
@@ -40,9 +40,9 @@ func Handler(w http.ResponseWriter, req *http.Request) {
 		v1.POST("/login", users.Login)
 	}
 
-	users := v1.Group("/users")
+	apiusers := v1.Group("/users")
 	{
-		users.POST("/create", users.CreateUser)
+		apiusers.POST("/create", users.CreateUser)
 	}
 
 	// By default it serves on :8080 unless a

@@ -38,7 +38,7 @@ func Login(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "you are logged in", "token": "12345"})
 }
 
-// CreateEntry - returns entry object from data send in request
+// CreateEntry - returns object from data send in request
 func CreateUser(c *gin.Context) {
 	token := utils.ExtractToken(c)
 	if token != "12345" {
@@ -64,6 +64,7 @@ func CreateUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	c.JSON(http.StatusBadRequest, gin.H{"success": user.ID})
 }
 
 // DBGetAllRefs - get all elements
