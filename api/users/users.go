@@ -126,7 +126,7 @@ func (entry User) DBGet(client *f.FaunaClient) (value f.Value, err error) {
 func (entry User) DBCreate(client *f.FaunaClient) (value f.Value, err error) {
 	return client.Query(
 		f.Create(
-			f.Collection("user"),
+			f.Class("user"),
 			f.Obj{"data": entry},
 		),
 	)
