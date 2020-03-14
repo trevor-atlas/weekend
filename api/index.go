@@ -35,11 +35,11 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 	name := "Guest"
 
-	if ok || len(keys[0]) > 1 {
-		log.Println("Url Param 'name' is missing")
+	if ok || len(keys[0]) > 0 {
 		name = keys[0]
 		return
 	}
+	w.WriteHeader(http.StatusOK)
 
 	fmt.Fprintf(w, `<h1>Hello, %s from Go on Now!</h1>`, name)
 
