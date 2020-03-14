@@ -8,6 +8,8 @@
     { "src": "/(.*)", "dest": "api/index.go" }
   ],
   "env": {
-    "FAUNADB_SECRET_KEY": "@faunadb-secret-key-weekend"
+    "FAUNADB_SECRET_KEY": "@faunadb-secret-key-weekend",
+    "GIN_MODE": "release",
+    "PORT": "3000"
   }
 }
