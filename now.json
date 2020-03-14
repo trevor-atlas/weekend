@@ -5,11 +5,10 @@
     { "src": "api/index.go", "use": "@now/go" }
   ],
   "routes": [
-    { "src": "/(.*)", "dest": "api/index.go" }
+    { "src": "/api/v1/greet", "dest": "api/index.go" }
   ],
   "env": {
     "FAUNADB_SECRET_KEY": "@faunadb-secret-key-weekend",
-    "GIN_MODE": "release",
-    "PORT": "4000"
+    "GIN_MODE": "release"
   }
 }

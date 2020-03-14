@@ -1,13 +1,13 @@
 package handler
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	users "github.com/trevor-atlas/weekend/api/users"
 	"log"
 	"net/http"
 	"time"
 )
-
 
 func buildRouter(w http.ResponseWriter, r *http.Request) *gin.Engine {
 	defer track(runtime("build router"))
@@ -27,34 +27,29 @@ func buildRouter(w http.ResponseWriter, r *http.Request) *gin.Engine {
 }
 
 // Handler is the function that Now calls for every request
-func Handler(w http.ResponseWriter, req *http.Request) {
+func Handler(w http.ResponseWriter, r *http.Request) {
+
 	defer track(runtime("handler"))
-	log.Println("Request url: ", req.URL.Path)
+	log.Println("Request url: ", r.URL.Path)
+	defer track(runtime("greet"))
+	keys, ok := r.URL.Query()["name"]
 
-	r := buildRouter(w, req)
+	name := "Guest"
 
-	r.GET("/api/greet", greet)
-	r.GET("/greet", greet)
-	v1 := r.Group("/api/v1")
-	{
-		v1.GET("/greet", greet)
-		v1.POST("/login", users.Login)
+	if ok || len(keys[0]) > 1 {
+		log.Println("Url Param 'name' is missing")
+		name = keys[0]
+		return
 	}
 
-	apiusers := v1.Group("/users")
-	{
-		apiusers.POST("/create", users.CreateUser)
-	}
+	fmt.Fprintf(w, `<h1>Hello, %s from Go on Now!</h1>`, name)
 
-	// By default it serves on :8080 unless a
-	// PORT environment variable was defined.
-	r.Run()
 }
 
 func greet(c *gin.Context) {
 	defer track(runtime("greet"))
 	name := c.DefaultQuery("name", "Guest")
-	c.String(http.StatusOK,"<h1>Hello, "+name+" from Go on Now!</h1>")
+	c.String(http.StatusOK, "<h1>Hello, "+name+" from Go on Now!</h1>")
 }
 
 func runtime(s string) (string, time.Time) {
