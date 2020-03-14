@@ -35,7 +35,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 	name := "Guest"
 
-	if ok || len(keys[0]) > 0 {
+	if ok && len(keys[0]) > 0 {
 		name = keys[0]
 		return
 	}
