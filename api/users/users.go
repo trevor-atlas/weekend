@@ -1,4 +1,4 @@
-package handler
+package users
 
 import (
 	f "github.com/fauna/faunadb-go/faunadb"

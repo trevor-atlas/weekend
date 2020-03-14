@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"os"
 	"time"
+	users "github.com/trevor-atlas/weekend/api/users"
 )
 
 
@@ -36,12 +37,12 @@ func Handler(w http.ResponseWriter, req *http.Request) {
 	v1 := r.Group("/v1")
 	{
 		v1.GET("/greet", greet)
-		v1.POST("/login", Login)
+		v1.POST("/login", users.Login)
 	}
 
 	users := v1.Group("/users")
 	{
-		users.POST("/create", Login)
+		users.POST("/create", users.CreateUser)
 	}
 
 	// By default it serves on :8080 unless a
