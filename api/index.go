@@ -31,16 +31,13 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	defer track(runtime("handler"))
 	log.Println("Request url: ", r.URL.Path)
 	defer track(runtime("greet"))
-	keys, ok := r.URL.Query()["name"]
+	name := r.URL.Query().Get("name")
 
-	name := "Guest"
 
-	if ok && len(keys[0]) > 0 {
-		name = keys[0]
-		return
+	if name == "" {
+		name = "Guest"
 	}
 	w.WriteHeader(http.StatusOK)
-
 	fmt.Fprintf(w, `<h1>Hello, %s from Go on Now!</h1>`, name)
 
 }
