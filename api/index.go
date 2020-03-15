@@ -8,7 +8,7 @@ import (
 )
 
 // Handler is the function that Now calls for every request
-func Greet(w http.ResponseWriter, r *http.Request) {
+func Handler(w http.ResponseWriter, r *http.Request) {
 	defer u.Track(u.Runtime("handler"))
 	log.Println("Request url: ", r.URL.Path)
 
