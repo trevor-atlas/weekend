@@ -10,47 +10,46 @@ import (
 	"net/http"
 )
 
-type StupidRouter struct {
+type stupidRouter struct {
 	routes map[string]http.HandlerFunc
 	errors []error
 }
 
-func NewStupidRouter() *StupidRouter {
-	sr := &StupidRouter{
+func NewStupidRouter() *stupidRouter {
+	return &stupidRouter{
 		routes: make(map[string]http.HandlerFunc),
 		errors: make([]error, 0),
 	}
-	return sr
 }
 
-func (sr *StupidRouter) register(method string, route string, handler http.HandlerFunc) StupidRouter {
+func (sr *stupidRouter) register(method string, route string, handler http.HandlerFunc) *stupidRouter {
 	key := method + "-" + route
 	if _, ok := sr.routes[key]; ok {
 		err := errors.New("More than one route matched <" + route + "> for method <" + method + ">")
 		sr.errors = append(sr.errors, err)
 	}
 	sr.routes[key] = handler
-	return *sr
+	return sr
 }
 
-func (sr *StupidRouter) GET(path string, handler http.HandlerFunc) StupidRouter {
+func (sr *stupidRouter) GET(path string, handler http.HandlerFunc) *stupidRouter {
 	return sr.register(http.MethodGet, path, handler)
 }
 
-func (sr *StupidRouter) POST(path string, handler http.HandlerFunc) StupidRouter {
+func (sr *stupidRouter) POST(path string, handler http.HandlerFunc) *stupidRouter {
 	return sr.register(http.MethodPost, path, handler)
 }
 
-func (sr *StupidRouter) PUT(path string, handler http.HandlerFunc) StupidRouter {
+func (sr *stupidRouter) PUT(path string, handler http.HandlerFunc) *stupidRouter {
 	return sr.register(http.MethodPut, path, handler)
 }
 
-func (sr *StupidRouter) DEFAULT(errorHandler http.HandlerFunc) StupidRouter {
+func (sr *stupidRouter) DEFAULT(errorHandler http.HandlerFunc) *stupidRouter {
 	sr.routes["DEFAULT"] = errorHandler
-	return *sr
+	return sr
 }
 
-func (sr *StupidRouter) Run(w http.ResponseWriter, r *http.Request) {
+func (sr *stupidRouter) Start(w http.ResponseWriter, r *http.Request) {
 	if len(sr.errors) > 0 {
 		var message string
 		for _, err := range  sr.errors {
@@ -95,7 +94,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, "I can't do that.")
 		})
 
-		router.Run(w, r)
+		router.Start(w, r)
 
 	log.Println("finished")
 }
