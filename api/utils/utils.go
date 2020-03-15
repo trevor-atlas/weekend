@@ -60,6 +60,7 @@ func GetParamWithDefault(name, fallback string, r *http.Request) string {
 }
 
 func Write(obj interface{}, w http.ResponseWriter) {
+	w.Header().Set("content-type", "application/json")
 	j, _ := json.Marshal(obj)
 	w.Write(j)
 }
