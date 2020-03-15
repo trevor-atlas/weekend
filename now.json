@@ -5,7 +5,8 @@
     { "src": "api/index.go", "use": "@now/go" }
   ],
   "routes": [
-    { "src": "/api/v1/greet", "dest": "api/index.go" }
+    { "src": "/api/v1/greet", "dest": "api/greet.go" },
+    { "src": "/api/v1/users/create", "dest": "api/user.go" }
   ],
   "env": {
     "FAUNADB_SECRET_KEY": "@faunadb-secret-key-weekend",

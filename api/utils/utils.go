@@ -1,9 +1,12 @@
 package utils
 
 import (
-	"github.com/gin-gonic/gin"
+	"encoding/json"
+	"log"
+	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	f "github.com/fauna/faunadb-go/faunadb"
 )
@@ -15,9 +18,51 @@ func DBClient() *f.FaunaClient {
 }
 
 // ExtractToken - extract token from headers
-func ExtractToken(c *gin.Context) string {
-	header := c.GetHeader("Authorization")
+func ExtractToken(r *http.Request) string {
+	header := GetHeader("Authorization", r)
 	return strings.Split(header, " ")[1]
+}
+
+func Runtime(s string) (string, time.Time) {
+	log.Println("Start:	", s)
+	return s, time.Now()
+}
+
+func Track(s string, startTime time.Time) {
+	endTime := time.Now()
+	log.Println("End:	", s, "took", endTime.Sub(startTime))
+}
+
+func GetHeader(name string, r *http.Request) string {
+	header := r.Header.Get(name)
+	return header
+}
+
+func GetHeaderWithDefault(name, fallback string, r *http.Request) string {
+	header := GetHeader(name, r)
+	if header == "" {
+		header = fallback
+	}
+	return header
+}
+
+func GetParam(name string, r *http.Request) string {
+	param := r.URL.Query().Get(name)
+	return param
+}
+
+func GetParamWithDefault(name, fallback string, r *http.Request) string {
+	param := GetParam(name, r)
+	if param == "" {
+		param = fallback
+	}
+	return param
+}
+
+func Write(obj interface{}, w http.ResponseWriter) {
+	w.WriteHeader(http.StatusOK)
+	j, _ := json.Marshal(obj)
+	w.Write(j)
 }
 
 //func AuthenticationRequired(auths ...string) gin.HandlerFunc {

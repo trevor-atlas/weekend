@@ -1,11 +1,13 @@
 package users
 
 import (
+	"fmt"
 	f "github.com/fauna/faunadb-go/faunadb"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	utils "github.com/trevor-atlas/weekend/api/utils"
 	"net/http"
+	"encoding/json"
 )
 
 type User struct {
@@ -39,32 +41,36 @@ func Login(c *gin.Context) {
 }
 
 // CreateEntry - returns object from data send in request
-func CreateUser(c *gin.Context) {
-	token := utils.ExtractToken(c)
+func CreateUser(w http.ResponseWriter, r *http.Request) {
+	token := utils.ExtractToken(r)
 	if token != "12345" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid or missing authorization token"})
-		return
-	}
-	var json UserCreateRequest
-	if err := c.ShouldBindJSON(&json); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Bad Request")
 		return
 	}
 
-	user := User{
-		Token: json.Token,
+	d := json.NewDecoder(r.Body)
+	request := &User{}
+	err := d.Decode(request)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	user := User {
+		Token: request.Token,
 		ID: uuid.New().String(),
-		Name: json.Name,
+		Name: request.Name,
 	}
 
 	client := utils.DBClient()
 
-	_, err := user.DBCreate(client)
+	_, err = user.DBCreate(client)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	c.JSON(http.StatusBadRequest, gin.H{"success": user.ID})
+
+	utils.Write(user, w)
 }
 
 // DBGetAllRefs - get all elements
