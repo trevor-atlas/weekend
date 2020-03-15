@@ -6,20 +6,22 @@ import (
 	"net/http"
 )
 
-type stupidRouter struct {
+type StupidRouter struct {
+	base string
 	routes map[string]http.HandlerFunc
 	errors []error
 }
 
-func NewStupidRouter() *stupidRouter {
-	return &stupidRouter{
+func NewStupidRouter(basePath string) *StupidRouter {
+	return &StupidRouter{
+		base: basePath,
 		routes: make(map[string]http.HandlerFunc),
 		errors: make([]error, 0),
 	}
 }
 
-func (sr *stupidRouter) register(method string, route string, handler http.HandlerFunc) *stupidRouter {
-	key := method + "-" + route
+func (sr *StupidRouter) register(method string, route string, handler http.HandlerFunc) *StupidRouter {
+	key := trimLeadingSlash(method + "-" + sr.base + route)
 	if _, ok := sr.routes[key]; ok {
 		err := errors.New("More than one route matched <" + route + "> for method <" + method + ">")
 		sr.errors = append(sr.errors, err)
@@ -28,24 +30,33 @@ func (sr *stupidRouter) register(method string, route string, handler http.Handl
 	return sr
 }
 
-func (sr *stupidRouter) GET(path string, handler http.HandlerFunc) *stupidRouter {
+func (sr *StupidRouter) Group(basePath string, fn func(instance *StupidRouter) *StupidRouter) *StupidRouter {
+	temp := fn(NewStupidRouter(basePath))
+	for k, v := range temp.routes {
+		sr.routes[k] = v
+	}
+	sr.errors = append(sr.errors, temp.errors...)
+	return sr
+}
+
+func (sr *StupidRouter) GET(path string, handler http.HandlerFunc) *StupidRouter {
 	return sr.register(http.MethodGet, path, handler)
 }
 
-func (sr *stupidRouter) POST(path string, handler http.HandlerFunc) *stupidRouter {
+func (sr *StupidRouter) POST(path string, handler http.HandlerFunc) *StupidRouter {
 	return sr.register(http.MethodPost, path, handler)
 }
 
-func (sr *stupidRouter) PUT(path string, handler http.HandlerFunc) *stupidRouter {
+func (sr *StupidRouter) PUT(path string, handler http.HandlerFunc) *StupidRouter {
 	return sr.register(http.MethodPut, path, handler)
 }
 
-func (sr *stupidRouter) DEFAULT(errorHandler http.HandlerFunc) *stupidRouter {
+func (sr *StupidRouter) DEFAULT(errorHandler http.HandlerFunc) *StupidRouter {
 	sr.routes["DEFAULT"] = errorHandler
 	return sr
 }
 
-func (sr *stupidRouter) Start(w http.ResponseWriter, r *http.Request) {
+func (sr *StupidRouter) Start(w http.ResponseWriter, r *http.Request) {
 	if len(sr.errors) > 0 {
 		var message string
 		for _, err := range sr.errors {
@@ -53,13 +64,8 @@ func (sr *stupidRouter) Start(w http.ResponseWriter, r *http.Request) {
 		}
 		http.Error(w, message, 500)
 	}
-	key := r.Method + "-" + r.URL.Path
+	key := trimLeadingSlash(r.Method + "-" + r.URL.Path)
 	log.Println("matched key: ", key)
-	// strip leading slash /
-	if key[len(key)-1:] == "/" {
-		key = key[:len(key)-1]
-	}
-	log.Println("check map key: ", key)
 	if cb, ok := sr.routes[key]; ok {
 		cb(w, r)
 		return
@@ -73,3 +79,9 @@ func (sr *stupidRouter) Start(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func trimLeadingSlash(str string) string {
+	if str[len(str)-1:] == "/" {
+		str = str[:len(str)-1]
+	}
+	return str
+}
