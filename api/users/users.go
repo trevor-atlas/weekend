@@ -74,18 +74,6 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	utils.Write(user, w)
 }
 
-func GetAll(w http.ResponseWriter, r *http.Request) {
-	token := utils.ExtractToken(r)
-	if token != "12345" {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Bad Request")
-		return
-	}
-
-	client := utils.DBClient()
-	users := &User{}.DBGetAll(client)
-}
-
 // DBGetAllRefs - get all elements
 func DBGetAllRefs(client *f.FaunaClient, id string) (refs []f.RefV, err error) {
 	value, err := client.Query(
