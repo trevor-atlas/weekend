@@ -23,33 +23,31 @@ func NewStupidRouter() *StupidRouter {
 	return sr
 }
 
-func (sr *StupidRouter) register(method string, route string, handler http.HandlerFunc) {
+func (sr *StupidRouter) register(method string, route string, handler http.HandlerFunc) StupidRouter {
 	key := method + "-" + route
 	if _, ok := sr.routes[key]; ok {
 		err := errors.New("More than one route matched <" + route + "> for method <" + method + ">")
 		sr.errors = append(sr.errors, err)
 	}
 	sr.routes[key] = handler
+	return *sr
 }
 
-func (sr *StupidRouter) GET(path string, handler http.HandlerFunc) *StupidRouter {
-	sr.register(http.MethodGet, path, handler)
-	return sr
+func (sr *StupidRouter) GET(path string, handler http.HandlerFunc) StupidRouter {
+	return sr.register(http.MethodGet, path, handler)
 }
 
-func (sr *StupidRouter) POST(path string, handler http.HandlerFunc) *StupidRouter {
-	sr.register(http.MethodPost, path, handler)
-	return sr
+func (sr *StupidRouter) POST(path string, handler http.HandlerFunc) StupidRouter {
+	return sr.register(http.MethodPost, path, handler)
 }
 
-func (sr *StupidRouter) PUT(path string, handler http.HandlerFunc) *StupidRouter {
-	sr.register(http.MethodPut, path, handler)
-	return sr
+func (sr *StupidRouter) PUT(path string, handler http.HandlerFunc) StupidRouter {
+	return sr.register(http.MethodPut, path, handler)
 }
 
-func (sr *StupidRouter) DEFAULT(errorHandler http.HandlerFunc) *StupidRouter {
+func (sr *StupidRouter) DEFAULT(errorHandler http.HandlerFunc) StupidRouter {
 	sr.routes["DEFAULT"] = errorHandler
-	return sr
+	return *sr
 }
 
 func (sr *StupidRouter) Run(w http.ResponseWriter, r *http.Request) {
@@ -82,7 +80,7 @@ func (sr *StupidRouter) Run(w http.ResponseWriter, r *http.Request) {
 
 // Handler is the function that Now calls for every request
 func Handler(w http.ResponseWriter, r *http.Request) {
-	//defer utils.Track(utils.Runtime("handler"))
+	defer utils.Track(utils.Runtime("handler"))
 	log.Println("Request url: ", r.URL.Path)
 	log.Println("Request method: ", r.Method)
 
