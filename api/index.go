@@ -28,6 +28,11 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 				GET("/greet", greetV2).
 				GET("/users", getUserV2)
 		}).
+		Group("/v3", func(instance *router.StupidRouter) *router.StupidRouter {
+			return instance.POST("/greet", func(writer http.ResponseWriter, request *http.Request) {
+				fmt.Fprintf(w, "this is a beta API! Be careful.")
+			})
+		}).
 		DEFAULT(func (w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusMethodNotAllowed)
 			fmt.Fprintf(w, "I can't do that.")
