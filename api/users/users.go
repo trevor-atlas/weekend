@@ -54,6 +54,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	err := d.Decode(request)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	user := User {
@@ -71,6 +72,18 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.Write(user, w)
+}
+
+func GetAll(w http.ResponseWriter, r *http.Request) {
+	token := utils.ExtractToken(r)
+	if token != "12345" {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Bad Request")
+		return
+	}
+
+	client := utils.DBClient()
+	users := &User{}.DBGetAll(client)
 }
 
 // DBGetAllRefs - get all elements
@@ -129,7 +142,6 @@ func (entry User) DBGet(client *f.FaunaClient) (value f.Value, err error) {
 	)
 }
 
-// DBCreate - create new Entry object
 func (entry User) DBCreate(client *f.FaunaClient) (value f.Value, err error) {
 	return client.Query(
 		f.Create(
