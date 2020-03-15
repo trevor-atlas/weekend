@@ -2,18 +2,13 @@ package users
 
 import (
 	"fmt"
-	f "github.com/fauna/faunadb-go/faunadb"
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
-	utils "github.com/trevor-atlas/weekend/api/utils"
 	"net/http"
-	"encoding/json"
 )
 
 type User struct {
-	ID string `fauna:"id"`
+	ID    string `fauna:"id"`
 	Token string `fauna:"token"`
-	Name string `fauna:"name"`
+	Name  string `fauna:"name"`
 }
 
 type LoginRequest struct {
@@ -22,162 +17,10 @@ type LoginRequest struct {
 }
 
 type UserCreateRequest struct {
-	Name string `form:"name" json:"name" xml:"name"  binding:"required"`
+	Name  string `form:"name" json:"name" xml:"name"  binding:"required"`
 	Token string `form:"token" json:"name" xml:"name"  binding:"required"`
 }
 
-func Login(c *gin.Context) {
-	var json LoginRequest
-	if err := c.ShouldBindJSON(&json); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	if json.User != "trevor" || json.Password != "12345" {
-		c.JSON(http.StatusUnauthorized, gin.H{"status": "unauthorized"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"status": "you are logged in", "token": "12345"})
-}
-
-// CreateEntry - returns object from data send in request
-func CreateUser(w http.ResponseWriter, r *http.Request) {
-	token := utils.ExtractToken(r)
-	if token != "12345" {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Bad Request")
-		return
-	}
-
-	d := json.NewDecoder(r.Body)
-	request := &User{}
-	err := d.Decode(request)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	user := User {
-		Token: request.Token,
-		ID: uuid.New().String(),
-		Name: request.Name,
-	}
-
-	client := utils.DBClient()
-
-	_, err = user.DBCreate(client)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	utils.Write(user, w)
-}
-
-// DBGetAllRefs - get all elements
-func DBGetAllRefs(client *f.FaunaClient, id string) (refs []f.RefV, err error) {
-	value, err := client.Query(
-		f.Paginate(
-			f.MatchTerm(
-				f.Index("user_id"),
-				id,
-			),
-		),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	value.At(f.ObjKey("data")).Get(&refs)
-	return refs, nil
-}
-
-// DBGetFromRefs - get all elements
-func DBGetFromRefs(client *f.FaunaClient, refs []f.RefV) (entries []User, err error) {
-	request := mapRefV(refs, func(ref f.RefV) interface{} {
-		return f.Get(ref)
-	})
-	value, err := client.Query(f.Arr(request))
-
-	if err != nil {
-		return nil, err
-	}
-
-	var elements f.ArrayV
-	value.Get(&elements)
-
-	results := make([]User, len(elements))
-	for index, element := range elements {
-		var object f.ObjectV
-		element.At(f.ObjKey("data")).Get(&object)
-		var entry User
-		object.Get(&entry)
-		results[index] = entry
-	}
-
-	return results, nil
-}
-
-// DBGet - get existing element from database
-func (entry User) DBGet(client *f.FaunaClient) (value f.Value, err error) {
-	return client.Query(
-		f.Get(
-			f.MatchTerm(
-				f.Index("user_id"),
-				f.Arr{entry.ID},
-			),
-		),
-	)
-}
-
-func (entry User) DBCreate(client *f.FaunaClient) (value f.Value, err error) {
-	return client.Query(
-		f.Create(
-			f.Class("user"),
-			f.Obj{"data": entry},
-		),
-	)
-}
-
-// DBUpdate - update existing object provided in result parameter
-func (entry User) DBUpdate(client *f.FaunaClient, result f.Value) (value f.Value, err error) {
-	var ref f.RefV
-	result.At(f.ObjKey("ref")).Get(&ref)
-	return client.Query(
-		f.Update(
-			ref,
-			f.Obj{"data": entry},
-		),
-	)
-}
-
-// DBCreateOrUpdate - combine DBGet, DBCreate and DBUpdate to make uperation easier
-func (entry User) DBCreateOrUpdate(client *f.FaunaClient) (value f.Value, err error) {
-	value, _ = entry.DBGet(client)
-
-	if value == nil {
-		value, err = entry.DBCreate(client)
-	} else {
-		value, err = entry.DBUpdate(client, value)
-	}
-	return value, err
-}
-
-// DBDelete - remove Entry object from database
-func (entry User) DBDelete(client *f.FaunaClient) (value f.Value, err error) {
-	result, err := entry.DBGet(client)
-	if result != nil {
-		var ref f.RefV
-		result.At(f.ObjKey("ref")).Get(&ref)
-		return client.Query(f.Delete(ref))
-	}
-	return result, err
-}
-
-func mapRefV(vs []f.RefV, f func(f.RefV) interface{}) []interface{} {
-	vsm := make([]interface{}, len(vs))
-	for i, v := range vs {
-		vsm[i] = f(v)
-	}
-	return vsm
+func Login(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "Login is unimplemented")
 }

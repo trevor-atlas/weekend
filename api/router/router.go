@@ -21,7 +21,7 @@ func NewStupidRouter(basePath string) *StupidRouter {
 		base: trimLeadingSlash(basePath),
 		routes: make(map[string]http.HandlerFunc),
 		errors: make([]error, 0),
-		// set this to false
+		// set this to false in prod
 		debug: getEnvAsBool("DEBUG", true),
 	}
 }
@@ -115,8 +115,8 @@ func getEnvAsBool(name string, defaultVal bool) bool {
 	return defaultVal
 }
 
-func logMsg(m ...interface{}) {
+func logMsg(format string, m ...interface{}) {
 	if ok := getEnvAsBool("DEBUG", true); ok {
-		log.Println(m)
+		log.Printf(format + "\n", m)
 	}
 }

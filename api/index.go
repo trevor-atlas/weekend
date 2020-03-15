@@ -14,8 +14,7 @@ import (
 // Please note that only one function should be exported in this file!
 func Handler(w http.ResponseWriter, r *http.Request) {
 	defer utils.Track(utils.Runtime("handler"))
-	log.Println("Request url: ", r.URL.Path)
-	log.Println("Request method: ", r.Method)
+	log.Printf("handling request %s: %s", r.Method, r.URL.Path)
 
 	router.NewStupidRouter("/api").
 		GET("/greet", greet).
