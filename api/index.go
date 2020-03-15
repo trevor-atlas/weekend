@@ -25,8 +25,8 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		}).
 		Group("/v2", func(instance *router.StupidRouter) *router.StupidRouter {
 			return instance.
-				GET("greet", greetV2).
-				GET("users", getUserV2)
+				GET("/greet", greetV2).
+				GET("/users", getUserV2)
 		}).
 		DEFAULT(func (w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusMethodNotAllowed)
