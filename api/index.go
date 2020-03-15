@@ -16,10 +16,8 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 	switch r.URL.Path {
 	case "/api/greet":
-	case "/api/greet/":
 		greet(w, r)
 	case "/api/users":
-	case "/api/users/":
 		switch r.Method {
 		case http.MethodGet:
 			getUser(w)
