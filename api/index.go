@@ -37,7 +37,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 func greet(w http.ResponseWriter, r *http.Request) {
 	name := utils.GetParamWithDefault("name", "Guest", r)
-	w.WriteHeader(http.StatusOK)
+	//w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, `<center><h1>Hello, %s from Go on Now!</h1></center>`, name)
 }
 
