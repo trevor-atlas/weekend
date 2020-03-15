@@ -60,13 +60,18 @@ func (sr *StupidRouter) Run(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, message, 500)
 	}
 	key := r.Method + "-" + r.URL.Path
+	// strip leading slash /
+	if key[len(key)-1:] == "/" {
+		key = key[:len(key)-1]
+	}
 	if cb, ok := sr.routes[key]; ok {
 		cb(w, r)
 	}
-	if cb, ok := sr.routes[key + "/"]; ok {
-		cb(w, r)
+	if fallback, ok := sr.routes["DEFAULT"]; ok {
+		fallback(w, r)
+	} else {
+		http.Error(w, "Not found", 404)
 	}
-	http.Error(w, "Not found", 404)
 }
 
 // Handler is the function that Now calls for every request
