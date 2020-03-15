@@ -86,7 +86,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Request url: ", r.URL.Path)
 	log.Println("Request method: ", r.Method)
 
-	NewStupidRouter().
+	router := NewStupidRouter().
 		GET("/api/greet", greet).
 		GET("/api/users", getUser).
 		POST("/api/users", func(writer http.ResponseWriter, request *http.Request) {
@@ -95,8 +95,9 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		DEFAULT(func (w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusMethodNotAllowed)
 			fmt.Fprintf(w, "I can't do that.")
-		}).
-		Run(w, r)
+		})
+
+		router.Run(w, r)
 
 	log.Println("finished")
 }
