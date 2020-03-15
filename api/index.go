@@ -15,9 +15,11 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Request url: ", r.URL.Path)
 
 	switch r.URL.Path {
-	case "api/greet":
+	case "/api/greet":
+	case "/api/greet/":
 		greet(w, r)
-	case "api/users":
+	case "/api/users":
+	case "/api/users/":
 		switch r.Method {
 		case http.MethodGet:
 			getUser(w)
@@ -27,6 +29,9 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusMethodNotAllowed)
 			fmt.Fprintf(w, "I can't do that.")
 		}
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		fmt.Fprintf(w, "I can't do that.")
 	}
 }
 
