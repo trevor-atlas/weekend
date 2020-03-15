@@ -16,7 +16,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 	switch r.URL.Path {
 	case "api/greet":
-		greet(w)
+		greet(w, r)
 	case "api/users":
 		switch r.Method {
 		case http.MethodGet:
@@ -28,15 +28,12 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, "I can't do that.")
 		}
 	}
-
 }
 
-func greet(w http.ResponseWriter) {
+func greet(w http.ResponseWriter, r *http.Request) {
 	name := utils.GetParamWithDefault("name", "Guest", r)
-
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, `<center><h1>Hello, %s from Go on Now!</h1></center>`, name)
-
 }
 
 func getUser(w http.ResponseWriter) {
