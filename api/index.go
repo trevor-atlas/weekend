@@ -82,7 +82,7 @@ func (sr *StupidRouter) Run(w http.ResponseWriter, r *http.Request) {
 
 // Handler is the function that Now calls for every request
 func Handler(w http.ResponseWriter, r *http.Request) {
-	defer utils.Track(utils.Runtime("handler"))
+	//defer utils.Track(utils.Runtime("handler"))
 	log.Println("Request url: ", r.URL.Path)
 	log.Println("Request method: ", r.Method)
 
@@ -97,6 +97,8 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, "I can't do that.")
 		}).
 		Run(w, r)
+
+	log.Println("finished")
 }
 
 func greet(w http.ResponseWriter, r *http.Request) {
