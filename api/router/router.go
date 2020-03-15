@@ -31,7 +31,7 @@ func (sr *StupidRouter) register(method string, route string, handler http.Handl
 }
 
 func (sr *StupidRouter) Group(basePath string, fn func(instance *StupidRouter) *StupidRouter) *StupidRouter {
-	temp := fn(NewStupidRouter(basePath))
+	temp := fn(NewStupidRouter(sr.base + basePath))
 	for k, v := range temp.routes {
 		sr.routes[k] = v
 	}
