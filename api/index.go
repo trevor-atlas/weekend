@@ -18,6 +18,7 @@ type StupidRouter struct {
 func NewStupidRouter() *StupidRouter {
 	sr := &StupidRouter{
 		routes: make(map[string]http.HandlerFunc),
+		errors: make([]error, 0),
 	}
 	return sr
 }
@@ -60,17 +61,22 @@ func (sr *StupidRouter) Run(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, message, 500)
 	}
 	key := r.Method + "-" + r.URL.Path
+	log.Println("matched key: ", key)
 	// strip leading slash /
 	if key[len(key)-1:] == "/" {
 		key = key[:len(key)-1]
 	}
+	log.Println("check map key: ", key)
 	if cb, ok := sr.routes[key]; ok {
 		cb(w, r)
+		return
 	}
 	if fallback, ok := sr.routes["DEFAULT"]; ok {
 		fallback(w, r)
+		return
 	} else {
 		http.Error(w, "Not found", 404)
+		return
 	}
 }
 
@@ -78,6 +84,7 @@ func (sr *StupidRouter) Run(w http.ResponseWriter, r *http.Request) {
 func Handler(w http.ResponseWriter, r *http.Request) {
 	defer utils.Track(utils.Runtime("handler"))
 	log.Println("Request url: ", r.URL.Path)
+	log.Println("Request method: ", r.Method)
 
 	NewStupidRouter().
 		GET("/api/greet", greet).
