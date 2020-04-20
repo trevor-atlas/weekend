@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"unicode/utf8"
 
 	"github.com/skip2/go-qrcode"
 
@@ -51,6 +52,10 @@ func GetSize(r *http.Request) (int, error) {
 
 func QREncode(w http.ResponseWriter, r *http.Request) {
 	str := r.URL.Query().Get("content")
+	if utf8.RuneCountInString(str) > 1000 {
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write([]byte("content is too large, gtfo"))
+	}
 	size, err := GetSize(r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
