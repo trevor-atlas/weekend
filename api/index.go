@@ -99,10 +99,10 @@ func Encrypt(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("invalid input"))
 		return
 	}
-	ciphertext := encrypt([]byte(base64.StdEncoding.EncodeToString([]byte(message))), password)
+	ciphertext := base64.StdEncoding.EncodeToString(encrypt([]byte(message), password))
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("content-type", "text/plain")
-	w.Write(ciphertext)
+	w.Write([]byte(ciphertext))
 }
 
 func EncryptWithQR(w http.ResponseWriter, r *http.Request) {
@@ -113,7 +113,7 @@ func EncryptWithQR(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("invalid input"))
 		return
 	}
-	ciphertext := encrypt([]byte(base64.StdEncoding.EncodeToString([]byte(message))), password)
+	ciphertext := base64.StdEncoding.EncodeToString(encrypt([]byte(message), password))
 	var png []byte
 	png, err := qrcode.Encode(string(ciphertext), qrcode.Medium, 256)
 	if err != nil {
@@ -134,7 +134,8 @@ func Decrypt(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("invalid input"))
 		return
 	}
-	plaintext := decrypt([]byte(base64.StdEncoding.EncodeToString([]byte(cipher))), password)
+	decodedCipher, _ := base64.StdEncoding.DecodeString(cipher)
+	plaintext := decrypt(decodedCipher, password)
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("content-type", "text/plain")
 	w.Write(plaintext)
