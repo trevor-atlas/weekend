@@ -127,15 +127,20 @@ func EncryptWithQR(w http.ResponseWriter, r *http.Request) {
 }
 
 func Decrypt(w http.ResponseWriter, r *http.Request) {
-	cipher := r.URL.Query().Get("cipher")
+	payload := r.URL.Query().Get("cipher")
 	password := r.URL.Query().Get("password")
-	if cipher == "" || password == "" || (utf8.RuneCountInString(cipher) > 10000 || utf8.RuneCountInString(password) > 1000) {
+	if payload == "" || password == "" || (utf8.RuneCountInString(payload) > 10000 || utf8.RuneCountInString(password) > 1000) {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("invalid input"))
 		return
 	}
-	decodedCipher, _ := base64.StdEncoding.DecodeString(cipher)
-	plaintext := decrypt(decodedCipher, password)
+	cipherBytes, err := base64.StdEncoding.DecodeString(payload)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("error decoding cipher"))
+		return
+	}
+	plaintext := decrypt(cipherBytes, password)
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("content-type", "text/plain")
 	w.Write(plaintext)
