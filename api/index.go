@@ -2,12 +2,14 @@ package handler
 
 import (
 	"fmt"
-	"github.com/google/uuid"
-	"github.com/trevor-atlas/weekend/api/router"
-	"github.com/trevor-atlas/weekend/api/users"
-	"github.com/trevor-atlas/weekend/api/utils"
 	"log"
 	"net/http"
+	"strconv"
+
+	"github.com/skip2/go-qrcode"
+
+	"github.com/trevor-atlas/weekend/api/router"
+	"github.com/trevor-atlas/weekend/api/utils"
 )
 
 // Handler is the function that Now calls for every request
@@ -17,21 +19,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("handling request %s: %s", r.Method, r.URL.Path)
 
 	router.NewStupidRouter("/api").
-		GET("/greet", greet).
-		GET("/users", getUser).
-		POST("/users", func(writer http.ResponseWriter, request *http.Request) {
-			fmt.Fprintf(w, "not implemented yet!")
-		}).
-		Group("/v2", func(instance *router.StupidRouter) *router.StupidRouter {
-			return instance.
-				GET("/greet", greetV2).
-				GET("/users", getUserV2)
-		}).
-		Group("/v3", func(instance *router.StupidRouter) *router.StupidRouter {
-			return instance.POST("/greet", func(writer http.ResponseWriter, request *http.Request) {
-				fmt.Fprintf(w, "this is a beta API! Be careful.")
-			})
-		}).
+		GET("/encode", QREncode).
 		DEFAULT(func (w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusMethodNotAllowed)
 			fmt.Fprintf(w, "I can't do that.")
@@ -41,28 +29,45 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	log.Println("finished")
 }
 
-func greet(w http.ResponseWriter, r *http.Request) {
-	name := utils.GetParamWithDefault("name", "Guest", r)
-	fmt.Fprintf(w, `<center><h1>Hello, %s from Go on Now!</h1></center>`, name)
-}
-
-func greetV2(w http.ResponseWriter, r *http.Request) {
-	name := utils.GetParamWithDefault("name", "Guest", r)
-	fmt.Fprintf(w, `<center><h1>Hello, %s from APIV2 Go on Now!</h1></center>`, name)
-}
-
-func getUser(w http.ResponseWriter, r *http.Request) {
-	stub := &users.User{
-		ID: uuid.New().String(),
-		Name: "Vin Diesel",
+func GetSize(r *http.Request) (int, error) {
+	defaultSize := 256
+	maxSize := 1024
+	querySize := r.URL.Query().Get("size")
+	if querySize == ""  {
+		return defaultSize, nil
 	}
-	utils.Write(stub, w)
+	size, err := strconv.Atoi(querySize)
+	if err != nil {
+		return 0, err
+	}
+	if size <= 0 {
+		size = defaultSize
+	}
+	if size >= maxSize {
+		size = maxSize
+	}
+	return size, nil
 }
 
-func getUserV2(w http.ResponseWriter, r *http.Request) {
-	stub := &users.User{
-		ID: uuid.New().String(),
-		Name: "John Hamm (v2)",
+func QREncode(w http.ResponseWriter, r *http.Request) {
+	str := r.URL.Query().Get("content")
+	size, err := GetSize(r)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write([]byte("size must be a positive integer greater than 32"))
 	}
-	utils.Write(stub, w)
+
+	if str == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write([]byte("invalid text, content must contain a non empty string"))
+	}
+	var png []byte
+	png, err = qrcode.Encode(str, qrcode.Medium, size)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write([]byte("error converting text content to qr code"))
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("content-type", "image/png")
+	w.Write(png)
 }
