@@ -4,10 +4,8 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/md5"
-	"crypto/rand"
 	"encoding/base64"
 	"encoding/hex"
-	"io"
 	"log"
 	"net/http"
 	"unicode/utf8"
@@ -88,9 +86,10 @@ func encrypt(data []byte, passphrase string) []byte {
 		panic(err.Error())
 	}
 	nonce := make([]byte, gcm.NonceSize())
-	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
-		panic(err.Error())
-	}
+	// need this to be deterministic because we don't actually store anything
+	// if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
+	// 	panic(err.Error())
+	// }
 	ciphertext := gcm.Seal(nonce, nonce, data, nil)
 	return ciphertext
 }
