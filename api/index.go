@@ -19,7 +19,10 @@ import (
 func Handler(w http.ResponseWriter, r *http.Request) {
 	defer utils.Track(utils.Runtime("handler"))
 	log.Printf("handling request %s: %s", r.Method, r.URL.Path)
-
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET,OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "*")
+	
 	router.NewStupidRouter("/api").
 		GET("/encode", QREncode).
 		GET("/encrypt", handlers.Encrypt).
