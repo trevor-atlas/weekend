@@ -4,9 +4,6 @@
   "builds": [
     { "src": "api/index.go", "use": "@now/go" }
   ],
-  "routes": [
-    { "src": "/api/(.*)", "dest": "api/index.go" }
-  ],
   "headers": [
     {
       "source": "api/index.go",
