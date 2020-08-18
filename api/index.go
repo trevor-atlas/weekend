@@ -26,8 +26,8 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		GET("/encrypt-with-qr", handlers.EncryptWithQR).
 		GET("/decrypt", handlers.Decrypt).
 		DEFAULT(func (w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusMethodNotAllowed)
-			fmt.Fprintf(w, "I can't do that.")
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprintf(w, "Unknown resource")
 		}).
 		Start(w, r)
 
